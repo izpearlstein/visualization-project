@@ -1,10 +1,14 @@
+import os
+
 import pandas as pd
+import numpy as np
 
-from flask import (
-    Flask,
-    render_template,
-    jsonify)
+import sqlalchemy
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
 
+from flask import Flask, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -14,34 +18,47 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.sqlite"
 
 db = SQLAlchemy(app)
 
+# reflect an existing database into a new model
+Base = automap_base()
+# reflect the tables
+Base.prepare(db.engine, reflect=True)
+
+# Save references to each table
+Reviews = Base.classes.reviews
+Genres = Base.classes.genres
+Content = Base.classes.content
+Labels = Base.classes.labels
+
+
+
 
 # Create our database model
-class Reviews(db.Model):
-    __tablename__ = 'Reviews'
+# class Reviews(db.Model):
+#     __tablename__ = 'Reviews'
 
-    reviewid = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    artist = db.Column(db.String)
-    url = db.Column(db.String)
-    score = db.Column(db.Float)
-    best_new_music = db.Column(db.Integer)
-    author = db.Column(db.String)
-    author_type = db.Column(db.String)
-    pub_date = db.Column(db.String)
-    pub_weekday = db.Column(db.Integer)
-    pub_day = db.Column(db.Integer)
-    pub_month = db.Column(db.Integer)
-    pub_year = db.Column(db.Integer)
+#     reviewid = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String)
+#     artist = db.Column(db.String)
+#     url = db.Column(db.String)
+#     score = db.Column(db.Float)
+#     best_new_music = db.Column(db.Integer)
+#     author = db.Column(db.String)
+#     author_type = db.Column(db.String)
+#     pub_date = db.Column(db.String)
+#     pub_weekday = db.Column(db.Integer)
+#     pub_day = db.Column(db.Integer)
+#     pub_month = db.Column(db.Integer)
+#     pub_year = db.Column(db.Integer)
 
-    def __repr__(self):
-        return '<Review %r>' % (self.name)
+#     def __repr__(self):
+#         return '<Review %r>' % (self.name)
 
 
 # Create database tables
 @app.before_first_request
 def setup():
     # Recreate database each time for demo
-    # db.drop_all()
+    db.drop_all()
     db.create_all()
 
 
