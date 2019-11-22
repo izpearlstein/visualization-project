@@ -11,10 +11,7 @@ from sqlalchemy import create_engine
 from flask import Flask, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__,
-            static_url_path='',
-            static_folder='static',
-            template_folder='templates')
+app = Flask(__name__)
 
 # The database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.sqlite"
@@ -71,91 +68,123 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/title")
+@app.route("/artists/<artist>")
 def artist_data(artist):
-    """Return artist, album, album_year, and score"""
+    """Return artist, album, pub_year, score, content, and url"""
 
-    #     sel = [
-    #     Pitchfork.artist,
-    #     Pitchfork.album,
-    #     Pitchfork.pub_year,
-    #     Samples_Metadata.AGE,
-    #     Samples_Metadata.LOCATION,
-    #     Samples_Metadata.BBTYPE,
-    #     Samples_Metadata.WFREQ,
-    # ]
+    sel = [
+        Pitchfork.artist,
+        Pitchfork.album,
+        Pitchfork.pub_year,
+        Pitchfork.score,
+        Pitchfork.content,
+        Pitchfork.url
+    ]
 
-    # results = db.session.query(*sel).filter(Samples_Metadata.sample == sample).all()
+    results = db.session.query(*sel).filter(Pitchfork.artist == artist).all()
 
-    # # Create a dictionary entry for each row of metadata information
-    # sample_metadata = {}
-    # for result in results:
-    #     sample_metadata["sample"] = result[0]
-    #     sample_metadata["ETHNICITY"] = result[1]
-    #     sample_metadata["GENDER"] = result[2]
-    #     sample_metadata["AGE"] = result[3]
-    #     sample_metadata["LOCATION"] = result[4]
-    #     sample_metadata["BBTYPE"] = result[5]
-    #     sample_metadata["WFREQ"] = result[6]
+    # Create a dictionary entry for each row of metadata information
+    artist_metadata = {}
+    for result in results:
+        artist_metadata["artist"] = result[0]
+        artist_metadata["album"] = result[1]
+        artist_metadata["pub_year"] = result[2]
+        artist_metadata["score"] = result[3]
+        artist_metadata["content"] = result[4]
+        artist_metadata["url"] = result[5]
 
-    # print(sample_metadata)
-    # return jsonify(sample_metadata)
+    print(artist_metadata)
+    return jsonify(artist_metadata)
 
-    # Query for artist discography and album scores
-    results = db.session.query(Pitchfork.title, Pitchfork.artist, Pitchfork.score).\
-        order_by(Pitchfork.score.desc()).\
-        limit(10).all()
 
-    # Create lists from the query results
-    title = [result[0] for result in results]
-    artist = [result[1] for result in results]
-    scores = [int(result[2]) for result in results]
+@app.route("/reviews/<artist>")
+def samples(artist):
+    """Return artist, album, year, and score"""
+    stmt = db.session.query(Pitchfork).statement
+    df = pd.read_sql_query(stmt, db.session.bind)
 
-    # Generate the plot trace
-    trace = {
-        "x": title,
-        "y": scores,
-        "type": "bar"
+    # Filter the data based on the artist
+    artist_reviews_data = df.loc[df[artist] > 1, [artist, "album","pub_year","genre","score"]]
+
+    # Sort by sample
+    artist_reviews_data.sort_values(by=artist, ascending=False, inplace=True)
+
+    # Format the data to send as json
+    data = {
+        "album": artist_reviews_data.album.values.tolist(),
+        "score": artist_reviews_data[artist].values.tolist(),
+        "pub_year": artist_reviews_data.pub_year.tolist(),
+        "genre": artist_reviews_data.genre.tolist()
     }
-    return jsonify(trace)
+    return jsonify(data)
 
 
-@app.route("/title_id")
-def title_data():
-    """Return emoji score and emoji id"""
+@app.route("/artist_names")
+def names():
+    """Return a list of artists."""
 
-    # Query for the emoji data using pandas
-    query_statement = db.session.query(Pitchfork).\
-        order_by(Pitchfork.score.desc()).\
-        limit(10).statement
-    df = pd.read_sql_query(query_statement, db.session.bind)
+    # Use Pandas to perform the sql query
+    stmt = db.session.query(Pitchfork.artist).statement
+    df = pd.read_sql_query(stmt, db.session.bind)
 
-    # Format the data for Plotly
-    trace = {
-        "x": df["title"].values.tolist(),
-        "y": df["score"].values.tolist(),
-        "type": "bar"
-    }
-    return jsonify(trace)
+    # Return a list of the column names (artist names)
+    return jsonify(list(df.artist))
+
+    # # Query for artist discography and album scores
+    # results = db.session.query(Pitchfork.title, Pitchfork.artist, Pitchfork.score).\
+    #     order_by(Pitchfork.score.desc()).\
+    #     limit(10).all()
+
+    # # Create lists from the query results
+    # title = [result[0] for result in results]
+    # artist = [result[1] for result in results]
+    # scores = [int(result[2]) for result in results]
+
+    # # Generate the plot trace
+    # trace = {
+    #     "x": title,
+    #     "y": scores,
+    #     "type": "bar"
+    # }
+    # return jsonify(trace)
 
 
-@app.route("/artist_name")
-def emoji_name_data():
-    """Return emoji score and emoji name"""
+# @app.route("/title_id")
+# def title_data():
+#     """Return emoji score and emoji id"""
 
-    # Query for the top 10 emoji data
-    results = db.session.query(Pitchfork.artist, Pitchfork.score).\
-        order_by(Pitchfork.score.desc()).\
-        limit(10).all()
-    df = pd.DataFrame(results, columns=['artist', 'score'])
+#     # Query for the emoji data using pandas
+#     query_statement = db.session.query(Pitchfork).\
+#         order_by(Pitchfork.score.desc()).\
+#         limit(10).statement
+#     df = pd.read_sql_query(query_statement, db.session.bind)
 
-    # Format the data for Plotly
-    plot_trace = {
-        "x": df["artist"].values.tolist(),
-        "y": df["score"].values.tolist(),
-        "type": "bar"
-    }
-    return jsonify(plot_trace)
+#     # Format the data for Plotly
+#     trace = {
+#         "x": df["title"].values.tolist(),
+#         "y": df["score"].values.tolist(),
+#         "type": "bar"
+#     }
+#     return jsonify(trace)
+
+
+# @app.route("/artist_name")
+# def emoji_name_data():
+#     """Return emoji score and emoji name"""
+
+#     # Query for the top 10 emoji data
+#     results = db.session.query(Pitchfork.artist, Pitchfork.score).\
+#         order_by(Pitchfork.score.desc()).\
+#         limit(10).all()
+#     df = pd.DataFrame(results, columns=['artist', 'score'])
+
+#     # Format the data for Plotly
+#     plot_trace = {
+#         "x": df["artist"].values.tolist(),
+#         "y": df["score"].values.tolist(),
+#         "type": "bar"
+#     }
+#     return jsonify(plot_trace)
 
 
 if __name__ == '__main__':
