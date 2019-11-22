@@ -18,47 +18,47 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database.sqlite"
 
 db = SQLAlchemy(app)
 
-# reflect an existing database into a new model
-Base = automap_base()
-# reflect the tables
-Base.prepare(db.engine, reflect=True)
+# # reflect an existing database into a new model
+# Base = automap_base()
+# # reflect the tables
+# Base.prepare(db.engine, reflect=True)
 
-# Save references to each table
-Reviews = Base.classes.reviews
-Genres = Base.classes.genres
-Content = Base.classes.content
-Labels = Base.classes.labels
-
-
+# # Save references to each table
+# Reviews = Base.classes.reviews
+# Genres = Base.classes.genres
+# Content = Base.classes.content
+# Labels = Base.classes.labels
 
 
 # Create our database model
-# class Reviews(db.Model):
-#     __tablename__ = 'Reviews'
+class Pitchfork(db.Model):
+    __tablename__ = 'pitchfork_tb'
 
-#     reviewid = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String)
-#     artist = db.Column(db.String)
-#     url = db.Column(db.String)
-#     score = db.Column(db.Float)
-#     best_new_music = db.Column(db.Integer)
-#     author = db.Column(db.String)
-#     author_type = db.Column(db.String)
-#     pub_date = db.Column(db.String)
-#     pub_weekday = db.Column(db.Integer)
-#     pub_day = db.Column(db.Integer)
-#     pub_month = db.Column(db.Integer)
-#     pub_year = db.Column(db.Integer)
+    reviewid = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String)
+    artist = db.Column(db.String)
+    url = db.Column(db.String)
+    score = db.Column(db.Float)
+    best_new_music = db.Column(db.Integer)
+    author = db.Column(db.String)
+    author_type = db.Column(db.String)
+    pub_date = db.Column(db.String)
+    pub_weekday = db.Column(db.Integer)
+    pub_day = db.Column(db.Integer)
+    pub_month = db.Column(db.Integer)
+    pub_year = db.Column(db.Integer)
+    genre = db.Column(db.String)
+    content = db.Column(db.String)
 
-#     def __repr__(self):
-#         return '<Review %r>' % (self.name)
+    def __repr__(self):
+        return '<pitchfork_tb %r>' % (self.name)
 
 
 # Create database tables
 @app.before_first_request
 def setup():
     # Recreate database each time for demo
-    db.drop_all()
+    # db.drop_all()
     db.create_all()
 
 
@@ -69,12 +69,38 @@ def home():
 
 
 @app.route("/title")
-def artist_data():
-    """Return album, artist, and score"""
+def artist_data(artist):
+    """Return artist, album, album_year, and score"""
 
-    # Query for the top 10 emoji data
-    results = db.session.query(Reviews.title, Reviews.artist, Reviews.score).\
-        order_by(Reviews.score.desc()).\
+    #     sel = [
+    #     Pitchfork.artist,
+    #     Pitchfork.album,
+    #     Pitchfork.pub_year,
+    #     Samples_Metadata.AGE,
+    #     Samples_Metadata.LOCATION,
+    #     Samples_Metadata.BBTYPE,
+    #     Samples_Metadata.WFREQ,
+    # ]
+
+    # results = db.session.query(*sel).filter(Samples_Metadata.sample == sample).all()
+
+    # # Create a dictionary entry for each row of metadata information
+    # sample_metadata = {}
+    # for result in results:
+    #     sample_metadata["sample"] = result[0]
+    #     sample_metadata["ETHNICITY"] = result[1]
+    #     sample_metadata["GENDER"] = result[2]
+    #     sample_metadata["AGE"] = result[3]
+    #     sample_metadata["LOCATION"] = result[4]
+    #     sample_metadata["BBTYPE"] = result[5]
+    #     sample_metadata["WFREQ"] = result[6]
+
+    # print(sample_metadata)
+    # return jsonify(sample_metadata)
+
+    # Query for artist discography and album scores
+    results = db.session.query(Pitchfork.title, Pitchfork.artist, Pitchfork.score).\
+        order_by(Pitchfork.score.desc()).\
         limit(10).all()
 
     # Create lists from the query results
@@ -96,8 +122,8 @@ def title_data():
     """Return emoji score and emoji id"""
 
     # Query for the emoji data using pandas
-    query_statement = db.session.query(Reviews).\
-        order_by(Reviews.score.desc()).\
+    query_statement = db.session.query(Pitchfork).\
+        order_by(Pitchfork.score.desc()).\
         limit(10).statement
     df = pd.read_sql_query(query_statement, db.session.bind)
 
@@ -115,8 +141,8 @@ def emoji_name_data():
     """Return emoji score and emoji name"""
 
     # Query for the top 10 emoji data
-    results = db.session.query(Reviews.artist, Reviews.score).\
-        order_by(Reviews.score.desc()).\
+    results = db.session.query(Pitchfork.artist, Pitchfork.score).\
+        order_by(Pitchfork.score.desc()).\
         limit(10).all()
     df = pd.DataFrame(results, columns=['artist', 'score'])
 
