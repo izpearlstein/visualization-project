@@ -1,22 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Flask Plotlyjs Example</title>
+    <title>Pitchfork Project</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.5.0/d3.min.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <div id="bar"></div>
-    <select id="selDataset" onchange="getData(this.value)">
-        <option value="title">Album Title</option>
-        <option value="title_id">Album ID</option>
-        <option value="artist_name">Artist Name</option>
-    </select>
+    <!-- Header -->
+        <header id="header">
+            <h1>Pitchfork</h1>
+            <p>Pitchfork is an American online magazine launched in 1995. The magazine developed <br />
+                a reputation for its extensive focus on independent music, but has since expanded <br />
+                to a variety of coverage on both indie and popular music.</p>
+        </header>
+    
+    <!-- Drop down bar -->    
+        <div id="bar"></div>
+        <select id="selDataset" onchange="getData(this.value)">
+            <option value="title">Album Title</option>
+            <option value="title_id">Album ID</option>
+            <option value="artist_name">Artist Name</option>
+        </select>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- Footer -->
+        <footer id="footer">
+            <ul class="icons">
+                <li><a href="https://twitter.com/pitchfork" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+                <li><a href="https://www.instagram.com/pitchfork/" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+                <li><a href="https://www.facebook.com/Pitchfork/" class="icon brands fa-facebook"><span class="label">Facebook</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; Pitchfork</li><li>Main site: <a href="https://pitchfork.com/">Pitchfork</a></li>
+            </ul>
+        </footer>
+    <!-- Scripts -->
+        <script src="assets/js/main.js"></script>
+
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 </body>
 </html>
