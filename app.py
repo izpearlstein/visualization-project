@@ -84,25 +84,30 @@ def names():
 def artist_data(artist):
     """Return artist, album, pub_year, genre, score, url"""
 
-    results = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score, Pitchfork.url).\
-        filter(Pitchfork.artist == artist).\
-        order_by(Pitchfork.pub_year).all()
+    stmt = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score, Pitchfork.url).\
+         filter(Pitchfork.artist == artist).statement
+    artist_df = pd.read_sql_query(stmt, db.session.bind)
+    data = artist_df.to_dict('records')
 
-    album = [result[0] for result in results]
-    year = [result[1] for result in results]
-    genre = [result[2] for result in results]
-    score = [float(result[3]) for result in results]
-    url = [result[4] for result in results]
+    # results = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score, Pitchfork.url).\
+    #     filter(Pitchfork.artist == artist).\
+    #     order_by(Pitchfork.pub_year).all()
 
-    data = {
-        "year": year,
-        "album": album,
-        "score": score,
-        "url": url
-    }
+    # album = [result[0] for result in results]
+    # year = [result[1] for result in results]
+    # genre = [result[2] for result in results]
+    # score = [float(result[3]) for result in results]
+    # url = [result[4] for result in results]
 
+    # data = {
+    #     "year": year,
+    #     "album": album,
+    #     "score": score,
+    #     "url": url
+    # }
+    # data = {}
     # for result in results:
-    #     artist_metadata[result[0]] = result[1:]
+    #     data[result[0]] = result[1:]
 
     # sel = [
     #     Pitchfork.title,

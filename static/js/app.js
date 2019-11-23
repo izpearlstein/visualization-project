@@ -5,14 +5,15 @@ function buildMetadata(artist) {
   var metadataURL = `/artists/${artist}`;
   d3.json(metadataURL).then(function(data){
 	console.log(data);
-	d3.select("tbody")
+	var table = d3.select("tbody")
 	.selectAll("tr")
 	.data(data)
 	.enter()
 	.append("tr")
 	.html(function(d) {
-		return `<td>${d.year}</td><td>${d.album}</td><td>${d.score}</td><td>${d.url}</td>`;
+		return `<td>${d.pub_year}</td><td>${d.title}</td><td>${d.score}</td><td>${d.url}</td>`;
 	});
+	table.html("");
     // var table = d3.select("#artist-metadata");
 
     // // Use `.html("") to clear any existing metadata
