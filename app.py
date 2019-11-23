@@ -68,77 +68,102 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/artists/<artist>")
-def artist_data(artist):
-    """Return artist, album, pub_year, score, content, and url"""
-
-    sel = [
-        Pitchfork.artist,
-        Pitchfork.album,
-        Pitchfork.pub_year,
-        Pitchfork.score,
-        Pitchfork.content,
-        Pitchfork.url
-    ]
-
-    results = db.session.query(*sel).filter(Pitchfork.artist == artist).all()
-
-    # Create a dictionary entry for each row of metadata information
-    artist_metadata = {}
-    for result in results:
-        artist_metadata["artist"] = result[0]
-        artist_metadata["album"] = result[1]
-        artist_metadata["pub_year"] = result[2]
-        artist_metadata["score"] = result[3]
-        artist_metadata["content"] = result[4]
-        artist_metadata["url"] = result[5]
-
-    print(artist_metadata)
-    return jsonify(artist_metadata)
-
-
-@app.route("/reviews/<artist>")
-def samples(artist):
-    """Return artist, album, year, and score"""
-    stmt = db.session.query(Pitchfork).statement
-    df = pd.read_sql_query(stmt, db.session.bind)
-
-    # Filter the data based on the artist
-    artist_reviews_data = df.loc[df[artist] > 1, [artist, "album","pub_year","genre","score"]]
-
-    # Sort by sample
-    artist_reviews_data.sort_values(by=artist, ascending=False, inplace=True)
-
-    # Format the data to send as json
-    data = {
-        "album": artist_reviews_data.album.values.tolist(),
-        "score": artist_reviews_data[artist].values.tolist(),
-        "pub_year": artist_reviews_data.pub_year.tolist(),
-        "genre": artist_reviews_data.genre.tolist()
-    }
-    return jsonify(data)
-
-
 @app.route("/artist_names")
 def names():
     """Return a list of artists."""
 
     # Use Pandas to perform the sql query
-    stmt = db.session.query(Pitchfork.artist).statement
+    stmt = db.session.query(Pitchfork.artist).distinct().statement
     df = pd.read_sql_query(stmt, db.session.bind)
 
     # Return a list of the column names (artist names)
     return jsonify(list(df.artist))
 
-    # # Query for artist discography and album scores
-    # results = db.session.query(Pitchfork.title, Pitchfork.artist, Pitchfork.score).\
-    #     order_by(Pitchfork.score.desc()).\
-    #     limit(10).all()
 
-    # # Create lists from the query results
-    # title = [result[0] for result in results]
-    # artist = [result[1] for result in results]
-    # scores = [int(result[2]) for result in results]
+@app.route("/artists/<artist>")
+def artist_data(artist):
+    """Return artist, album, pub_year, genre, score, url"""
+
+    results = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score, Pitchfork.url).\
+        filter(Pitchfork.artist == artist).\
+        order_by(Pitchfork.pub_year).all()
+
+    album = [result[0] for result in results]
+    year = [result[1] for result in results]
+    genre = [result[2] for result in results]
+    score = [float(result[3]) for result in results]
+    url = [result[4] for result in results]
+
+    data = {
+        "year": year,
+        "album": album,
+        "score": score,
+        "url": url
+    }
+
+    # for result in results:
+    #     artist_metadata[result[0]] = result[1:]
+
+    # sel = [
+    #     Pitchfork.title,
+    #     Pitchfork.pub_year,
+    #     Pitchfork.genre,
+    #     Pitchfork.score,
+    #     Pitchfork.url
+    #     # Pitchfork.content
+    # ]
+
+    # results = db.session.query(*sel).filter(Pitchfork.artist == artist).all()
+
+    # # Create a dictionary entry for each row of metadata information
+    # artist_metadata = {}
+    # for result in results:
+    #     artist_dict = {}
+    #     artist_metadata["title"] = result[0]
+    #     artist_metadata["pub_year"] = result[1]
+    #     artist_metadata["genre"] = result[2]
+    #     artist_metadata["score"] = result[3]
+    #     artist_metadata["url"] = result[4]
+    #     # artist_metadata["content"] = result[5]
+
+    print(data)
+    return jsonify(data)
+
+
+@app.route("/reviews/<artist>")
+def reviews(artist):
+    """Return artist, album, year, and score"""
+    stmt = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score).\
+        filter(Pitchfork.artist == artist).statement
+    artist_df = pd.read_sql_query(stmt, db.session.bind)
+
+    # # Filter the data based on the artist
+    # artist_reviews_data = df.loc[df[artist], [artist, "title","pub_year","genre","score"]]
+
+    # # Sort by sample
+    # artist_reviews_data.sort_values(by=artist, ascending=False, inplace=True)
+
+    # Format the data to send as json
+    data = {
+        "album": artist_df.title.values.tolist(),
+        "score": artist_df.score.values.tolist(),
+        "pub_year": artist_df.pub_year.tolist(),
+        "genre": artist_df.genre.tolist()
+    }
+    return jsonify(data)
+
+
+#     # # Query for artist discography and album scores
+#     results = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score).\
+#         filter(Pitchfork.artist == artist).\
+#         order_by(Pitchfork.pub_year).all()
+
+#     # Create lists from the query results
+#     album = [result[0] for result in results]
+#     year = [result[1] for result in results]
+#     genre = [result[2] for result in results]
+#     score = [int(result[3]) for result in results]
+
 
     # # Generate the plot trace
     # trace = {

@@ -24,11 +24,16 @@
           <h5>SELECT Artist:</h5>
           <select id="selDataset" onchange="optionChanged(this.value)"></select>
         </div>
-        <div class="panel panel-primary">
-          <div class="panel-heading">
-            <h3 class="panel-title">Artist MetaData</h3>
-          </div>
-          <div id="artist-metadata" class="panel-body"></div>
+        <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr><th>Year</th><th>Album</th><th>Score</th><th>URL</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
       </div>
       <div class="col-md-5">

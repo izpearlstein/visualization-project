@@ -4,20 +4,27 @@ function buildMetadata(artist) {
   // Use d3 to select the panel with id of `#artist-metadata`
   var metadataURL = `/artists/${artist}`;
   d3.json(metadataURL).then(function(data){
-    console.log(data);
-    var panel = d3.select("#sample-metadata");
+	console.log(data);
+	d3.select("tbody")
+	.selectAll("tr")
+	.data(data)
+	.enter()
+	.append("tr")
+	.html(function(d) {
+		return `<td>${d.year}</td><td>${d.album}</td><td>${d.score}</td><td>${d.url}</td>`;
+	});
+    // var table = d3.select("#artist-metadata");
 
-    // Use `.html("") to clear any existing metadata
-    panel.html("");
+    // // Use `.html("") to clear any existing metadata
+    // table.html("");
 
-    // Use `Object.entries` to add each key and value pair to the panel
-    // Hint: Inside the loop, you will need to use d3 to append new
-    // tags for each key-value in the metadata.
-    Object.entries(data).forEach(function([key,value]){
-      panel.append("h6").text(`${key}:${value}`);
+    // // Use `Object.entries` to add each key and value pair to the panel
+    // // Hint: Inside the loop, you will need to use d3 to append new
+    // // tags for each key-value in the metadata.
+    // Object.entries(data).forEach(function([key,value]){
+    //   table.append("h6").text(`${key}:${value}`);
     })
-  });
-}
+  };
 
 function buildCharts(artist) {
 
@@ -27,7 +34,7 @@ function buildCharts(artist) {
     d3.json(plotdataURL).then(function(data){
       console.log(data);
       var albums = data.album;
-      var years = data.pub_year;
+      var years = data.year;
       var scores = data.score;
       var genres = data.genre;
 
@@ -49,8 +56,6 @@ function buildCharts(artist) {
       plotly.Plot("bubble", bubble_plot, bubble_layout);
 
     // @TODO: Build a Pie Chart
-    // HINT: You will need to use slice() to grab the top 10 sample_values,
-    // otu_ids, and labels (10 each).
     d3.json(plotdataURL).then(function(data){
       console.log(data);
       var pie_plot = [{
