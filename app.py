@@ -73,7 +73,8 @@ def names():
     """Return a list of artists."""
 
     # Use Pandas to perform the sql query
-    stmt = db.session.query(Pitchfork.artist).distinct().statement
+    stmt = db.session.query(Pitchfork.artist).distinct().order_by(Pitchfork.artist).statement
+    print(str(stmt))
     df = pd.read_sql_query(stmt, db.session.bind)
 
     # Return a list of the column names (artist names)
@@ -84,7 +85,7 @@ def names():
 def artist_data(artist):
     """Return artist, album, pub_year, genre, score, url"""
 
-    stmt = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.genre, Pitchfork.score, Pitchfork.url).\
+    stmt = db.session.query(Pitchfork.title, Pitchfork.pub_year, Pitchfork.score, Pitchfork.url).\
          filter(Pitchfork.artist == artist).statement
     artist_df = pd.read_sql_query(stmt, db.session.bind)
     data = artist_df.to_dict('records')

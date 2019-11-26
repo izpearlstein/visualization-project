@@ -1,18 +1,19 @@
 function buildMetadata(artist) {
 
   // Use `d3.json` to fetch the metadata for an artist
-  // Use d3 to select the panel with id of `#artist-metadata`
+  // Use d3 to select the table
   var metadataURL = `/artists/${artist}`;
   d3.json(metadataURL).then(function(data){
-	console.log(data);
-	var table = d3.select("tbody")
-	.selectAll("tr")
-	.data(data)
-	.enter()
-	.append("tr")
-	.html(function(d) {
-		return `<td>${d.pub_year}</td><td>${d.title}</td><td>${d.score}</td><td>${d.url}</td>`;
-	});
+  console.log(data);
+  d3.select("tbody")
+      .selectAll("tr")
+      .data(data)
+      .enter()
+      .append("tr")
+      .html(function(d) {
+        return `<td>${d.pub_year}</td><td>${d.title}</td><td>${d.score}</td><td>${d.url}</td>`;
+      })
+      .exit().remove();
 	table.html("");
     // var table = d3.select("#artist-metadata");
 
